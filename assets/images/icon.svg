@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="GetPayIn">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#009C95"/>
+      <stop offset="100%" stop-color="#00736D"/>
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="48" ry="48" fill="url(#bg)"/>
+  <!-- Stylised "P" with a forward arrow inside, recreated from the GetPayIn logo. -->
+  <g fill="#ffffff">
+    <!-- Outer P shape -->
+    <path d="M76 56h66c30.928 0 56 25.072 56 56s-25.072 56-56 56h-30v44c0 6.627-5.373 12-12 12h-12c-6.627 0-12-5.373-12-12V68c0-6.627 5.373-12 12-12zm12 32v56h54c15.464 0 28-12.536 28-28s-12.536-28-28-28H88z"/>
+    <!-- Forward arrow inside the P bowl -->
+    <path d="M119 100h22l-10-10a4 4 0 0 1 5.657-5.657l16.485 16.485a4 4 0 0 1 0 5.657L136.657 122.97a4 4 0 0 1-5.657-5.657L141 107h-22a4 4 0 1 1 0-7z"/>
+  </g>
+</svg>

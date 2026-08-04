@@ -1,0 +1,17 @@
+# Dependencies
+/vendor/
+/node_modules/
+
+# Build output archives
+/*.zip
+
+# Editor / OS cruft
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log
+
+# PHPCS / tooling caches
+.phpcs.cache
+.phpunit.result.cache

@@ -1,0 +1,1261 @@
+/**
+ * GetPayIn — admin styles.
+ *
+ * Architecture:
+ *   1. Design tokens (CSS custom properties)
+ *   2. Reset / base resets that apply only inside our scope
+ *   3. Layout primitives (full-width row, section-head, card)
+ *   4. Components (hero, tutorial, setup steps, mode toggle, credentials,
+ *      test cards, support, order meta-box, footer)
+ *   5. Utilities (status dots, copy buttons, pills)
+ *   6. Accessibility helpers (focus rings, reduced-motion)
+ *
+ * Loaded only on the WC settings checkout tab and the order edit screen.
+ */
+
+/* =============================================================
+   1. Design tokens
+   ============================================================= */
+.paylink-mode-row,
+.paylink-tutorial-row,
+.paylink-urls-row,
+.paylink-test-cards-row,
+.paylink-support-row,
+.paylink-hero-row,
+.paylink-footer-row {
+    /* Color — primary palette is GetPayIn teal #009C95 and shades. */
+    --pl-primary:        #009C95;
+    --pl-primary-strong: #00736D;
+    --pl-primary-deep:   #004C48;
+    --pl-primary-soft:   #E6F7F6;
+    --pl-primary-rgb:    0, 156, 149;
+    --pl-success:        #00a32a;
+    --pl-success-soft:   #e6f5ea;
+    --pl-warning:        #d97706;
+    --pl-warning-soft:   #fff8e5;
+    --pl-danger:         #d63638;
+    --pl-danger-soft:    #fcf0f1;
+
+    --pl-text:           #1d2327;
+    --pl-text-muted:     #50575e;
+    --pl-text-subtle:    #646970;
+    --pl-text-faint:     #8c8f94;
+
+    --pl-surface:        #ffffff;
+    --pl-surface-alt:    #f6f7f7;
+    --pl-surface-mute:   #f0f0f1;
+    --pl-border:         #c3c4c7;
+    --pl-border-soft:    #e0e0e2;
+
+    /* Radii */
+    --pl-radius-sm: 4px;
+    --pl-radius-md: 6px;
+    --pl-radius-lg: 10px;
+    --pl-radius-pill: 999px;
+
+    /* Spacing — 4px grid */
+    --pl-space-1: 4px;
+    --pl-space-2: 8px;
+    --pl-space-3: 12px;
+    --pl-space-4: 16px;
+    --pl-space-5: 20px;
+    --pl-space-6: 24px;
+    --pl-space-7: 32px;
+
+    /* Shadows */
+    --pl-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
+    --pl-shadow-md: 0 2px 6px rgba(15, 23, 42, 0.08), 0 1px 2px rgba(15, 23, 42, 0.04);
+    --pl-shadow-lg: 0 8px 24px rgba(15, 23, 42, 0.10);
+    --pl-ring:      0 0 0 3px rgba(var(--pl-primary-rgb), 0.30);
+
+    /* Motion */
+    --pl-ease:   cubic-bezier(0.2, 0.8, 0.2, 1);
+    --pl-dur-1: 120ms;
+    --pl-dur-2: 200ms;
+
+    /* Typography */
+    --pl-font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Roboto Mono", monospace;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .paylink-mode-row *,
+    .paylink-tutorial-row *,
+    .paylink-urls-row *,
+    .paylink-test-cards-row *,
+    .paylink-support-row *,
+    .paylink-hero-row *,
+    .paylink-footer-row * {
+        transition: none !important;
+        animation-duration: 0.001ms !important;
+    }
+}
+
+/* =============================================================
+   2. Layout primitives
+   ============================================================= */
+
+/* Full-width custom panels — bleed across both form-table columns. */
+.paylink-fullwidth-cell {
+    padding: var(--pl-space-3) 0 !important;
+    border-bottom: 0 !important;
+}
+
+.paylink-hero-row > td,
+.paylink-footer-row > td {
+    padding: var(--pl-space-3) 0 !important;
+}
+
+/* Field-icon affinity: WC settings labels (left column) get a subtle
+   leading icon for the few rows we still render through the default WC layout. */
+.paylink-tutorial-row label,
+.paylink-urls-row label,
+.paylink-mode-row label,
+.paylink-test-cards-row label,
+.paylink-support-row label {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--pl-space-1);
+}
+
+/* Section header inside any panel: large icon on the left, h3 + subtitle stacked. */
+.paylink-section-head {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--pl-space-3);
+    margin-bottom: var(--pl-space-3);
+}
+
+.paylink-section-head > .dashicons {
+    flex: 0 0 auto;
+    width: 24px;
+    height: 24px;
+    font-size: 24px;
+    line-height: 24px;
+    color: var(--pl-primary);
+    margin-top: 2px;
+}
+
+.paylink-section-head h3 {
+    margin: 0 0 2px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--pl-text);
+    line-height: 1.3;
+}
+
+.paylink-section-head p {
+    margin: 0;
+    color: var(--pl-text-muted);
+    line-height: 1.5;
+}
+
+/* =============================================================
+   3. Hero / status banner
+   ============================================================= */
+.paylink-hero-cell {
+    padding: 0 !important;
+}
+
+.paylink-hero {
+    position: relative;
+    background: linear-gradient(135deg, var(--pl-primary-deep) 0%, var(--pl-primary) 100%);
+    color: #fff;
+    border-radius: var(--pl-radius-lg);
+    padding: var(--pl-space-6) var(--pl-space-7);
+    box-shadow: var(--pl-shadow-md);
+    overflow: hidden;
+}
+
+.paylink-hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 100% 0%, rgba(255, 255, 255, 0.12), transparent 60%);
+    pointer-events: none;
+}
+
+.paylink-hero.is-warning {
+    background: linear-gradient(135deg, #b45309 0%, var(--pl-warning) 100%);
+}
+
+.paylink-hero.is-idle {
+    background: linear-gradient(135deg, #3a3f47 0%, #50575e 100%);
+}
+
+.paylink-hero-main {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--pl-space-4);
+    flex-wrap: wrap;
+}
+
+.paylink-hero-text h2 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 600;
+    color: #fff;
+    letter-spacing: -0.01em;
+}
+
+.paylink-hero-text p {
+    margin: 2px 0 0;
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 13px;
+    letter-spacing: 0.02em;
+}
+
+.paylink-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--pl-space-1);
+    padding: 6px 14px;
+    border-radius: var(--pl-radius-pill);
+    font-size: 13px;
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.18);
+    color: #fff;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+
+.paylink-status-pill .dashicons {
+    color: #fff;
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    line-height: 16px;
+}
+
+.paylink-hero-checklist {
+    position: relative;
+    list-style: none !important;
+    margin: var(--pl-space-5) 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--pl-space-2) var(--pl-space-6);
+}
+
+.paylink-hero-checklist li {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--pl-space-1);
+    color: rgba(255, 255, 255, 0.92);
+    font-size: 13px;
+    margin: 0;
+}
+
+.paylink-hero-checklist li.is-pending {
+    color: rgba(255, 255, 255, 0.55);
+}
+
+.paylink-hero-checklist li .dashicons {
+    color: inherit;
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    line-height: 16px;
+}
+
+.paylink-hero-checklist li.is-done .dashicons {
+    color: #b8e6c1;
+}
+
+@media (max-width: 600px) {
+    .paylink-hero-main {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+/* =============================================================
+   4a. Hub card (updates + subscription)
+   ============================================================= */
+.paylink-hub-row {
+    --pl-primary:        #009C95;
+    --pl-primary-strong: #00736D;
+    --pl-primary-deep:   #004C48;
+    --pl-primary-soft:   #E6F7F6;
+    --pl-primary-rgb:    0, 156, 149;
+    --pl-success:        #00a32a;
+    --pl-success-soft:   #e6f5ea;
+    --pl-warning:        #d97706;
+    --pl-warning-soft:   #fff8e5;
+    --pl-danger:         #d63638;
+    --pl-danger-soft:    #fcf0f1;
+    --pl-text:           #1d2327;
+    --pl-text-muted:     #50575e;
+    --pl-text-subtle:    #646970;
+    --pl-text-faint:     #8c8f94;
+    --pl-surface:        #ffffff;
+    --pl-surface-alt:    #f6f7f7;
+    --pl-surface-mute:   #f0f0f1;
+    --pl-border:         #c3c4c7;
+    --pl-border-soft:    #e0e0e2;
+    --pl-radius-sm: 4px;
+    --pl-radius-md: 6px;
+    --pl-radius-lg: 10px;
+    --pl-radius-pill: 999px;
+    --pl-space-1: 4px;
+    --pl-space-2: 8px;
+    --pl-space-3: 12px;
+    --pl-space-4: 16px;
+    --pl-space-5: 20px;
+    --pl-space-6: 24px;
+    --pl-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
+    --pl-shadow-md: 0 2px 6px rgba(15, 23, 42, 0.08), 0 1px 2px rgba(15, 23, 42, 0.04);
+    --pl-ease:   cubic-bezier(0.2, 0.8, 0.2, 1);
+    --pl-dur-2: 200ms;
+}
+
+.paylink-hub-card {
+    background: var(--pl-surface);
+    border: 1px solid var(--pl-border);
+    border-radius: var(--pl-radius-lg);
+    padding: var(--pl-space-5);
+    box-shadow: var(--pl-shadow-sm);
+}
+
+.paylink-hub-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--pl-space-4);
+}
+
+@media (max-width: 782px) {
+    .paylink-hub-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.paylink-hub-tile {
+    border: 1px solid var(--pl-border-soft);
+    border-radius: var(--pl-radius-md);
+    background: var(--pl-surface-alt);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.paylink-hub-tile-head {
+    display: flex;
+    align-items: center;
+    gap: var(--pl-space-2);
+    padding: var(--pl-space-3) var(--pl-space-4);
+    background: var(--pl-surface);
+    border-bottom: 1px solid var(--pl-border-soft);
+}
+
+.paylink-hub-tile-head > .dashicons {
+    color: var(--pl-primary);
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    line-height: 18px;
+    flex: 0 0 auto;
+}
+
+.paylink-hub-tile-title {
+    flex: 1 1 auto;
+    font-weight: 700;
+    color: var(--pl-text);
+    font-size: 14px;
+}
+
+.paylink-hub-status-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 10px;
+    border-radius: var(--pl-radius-pill);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+}
+
+.paylink-hub-status-pill.is-active {
+    background: var(--pl-success-soft);
+    color: #00731f;
+}
+
+.paylink-hub-status-pill.is-warning {
+    background: var(--pl-warning-soft);
+    color: #b45309;
+}
+
+.paylink-hub-status-pill.is-danger {
+    background: var(--pl-danger-soft);
+    color: #b32d2e;
+}
+
+.paylink-hub-status-pill.is-idle {
+    background: var(--pl-surface-mute);
+    color: var(--pl-text-muted);
+}
+
+.paylink-hub-tile-body {
+    padding: var(--pl-space-4);
+    flex: 1 1 auto;
+    color: var(--pl-text-muted);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.paylink-hub-tile-body p {
+    margin: 0 0 var(--pl-space-3);
+}
+
+.paylink-hub-tile-body code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    background: var(--pl-surface-mute);
+    padding: 1px 6px;
+    border-radius: var(--pl-radius-sm);
+    color: var(--pl-text);
+}
+
+.paylink-hub-tile-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--pl-space-2);
+}
+
+.paylink-hub-tile-actions .button {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--pl-space-1);
+}
+
+.paylink-hub-tile-actions .button .dashicons {
+    color: inherit;
+}
+
+/* =============================================================
+   4. Tutorial video
+   ============================================================= */
+.paylink-tutorial-card {
+    background: var(--pl-surface);
+    border: 1px solid var(--pl-border);
+    border-radius: var(--pl-radius-lg);
+    padding: var(--pl-space-5);
+    box-shadow: var(--pl-shadow-sm);
+}
+
+.paylink-tutorial-frame {
+    position: relative;
+    padding-bottom: 56.25%; /* 16:9 */
+    height: 0;
+    overflow: hidden;
+    background: #1d2327;
+    border-radius: var(--pl-radius-md);
+}
+
+.paylink-tutorial-frame iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+.paylink-tutorial-foot {
+    margin: var(--pl-space-3) 0 0;
+}
+
+.paylink-tutorial-foot .button .dashicons {
+    margin-right: var(--pl-space-1);
+    margin-top: 3px;
+    color: inherit;
+}
+
+/* =============================================================
+   5. Setup steps
+   ============================================================= */
+.paylink-setup-box {
+    background: var(--pl-surface);
+    border: 1px solid var(--pl-border);
+    border-radius: var(--pl-radius-lg);
+    padding: var(--pl-space-5);
+    box-shadow: var(--pl-shadow-sm);
+}
+
+.paylink-setup-box ol.paylink-step-list,
+.paylink-setup-box ol.paylink-step-list li {
+    list-style: none !important;
+}
+
+.paylink-setup-box ol.paylink-step-list {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--pl-space-3);
+}
+
+.paylink-setup-box ol.paylink-step-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--pl-space-3);
+    margin: 0;
+    padding: 0;
+}
+
+.paylink-setup-box ol.paylink-step-list li::marker {
+    content: '';
+    display: none;
+}
+
+.paylink-step-num {
+    flex: 0 0 28px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--pl-primary);
+    color: #fff;
+    font-weight: 600;
+    text-align: center;
+    line-height: 28px;
+    font-size: 13px;
+    box-shadow: var(--pl-shadow-sm);
+}
+
+.paylink-step-body {
+    flex: 1;
+    line-height: 1.5;
+    color: var(--pl-text);
+}
+
+.paylink-step-text {
+    margin: 0 0 var(--pl-space-2);
+}
+
+.paylink-url-list {
+    margin: var(--pl-space-2) 0 var(--pl-space-1);
+    display: flex;
+    flex-direction: column;
+    gap: var(--pl-space-2);
+}
+
+.paylink-url-row {
+    display: flex;
+    align-items: center;
+    gap: var(--pl-space-3);
+}
+
+.paylink-url-row .paylink-url-label {
+    flex: 0 0 150px;
+    font-weight: 600;
+    color: var(--pl-text);
+}
+
+.paylink-copy-group {
+    flex: 1;
+    display: flex;
+    align-items: stretch;
+    gap: var(--pl-space-1);
+    min-width: 0;
+}
+
+.paylink-copy-group input[type="text"] {
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+    box-sizing: border-box;
+    font-family: var(--pl-font-mono);
+    padding: 6px 10px;
+    background: var(--pl-surface-alt);
+}
+
+@media (max-width: 782px) {
+    .paylink-url-row {
+        flex-wrap: wrap;
+    }
+    .paylink-url-row .paylink-url-label {
+        flex: 1 1 100%;
+    }
+    .paylink-copy-group {
+        flex: 1 1 100%;
+    }
+}
+
+/* =============================================================
+   6. Copy button
+   ============================================================= */
+.paylink-copy-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--pl-space-1);
+    transition: background-color var(--pl-dur-2) var(--pl-ease),
+                color var(--pl-dur-2) var(--pl-ease),
+                border-color var(--pl-dur-2) var(--pl-ease),
+                transform var(--pl-dur-1) var(--pl-ease);
+}
+
+.paylink-copy-btn:active {
+    transform: translateY(1px);
+}
+
+.paylink-copy-btn .dashicons {
+    color: inherit;
+    margin-top: 1px;
+}
+
+.paylink-copy-btn.is-copied {
+    background: var(--pl-success) !important;
+    border-color: #008a20 !important;
+    color: #fff !important;
+}
+
+/* =============================================================
+   7. Mode panel — toggle + credentials cards
+   ============================================================= */
+.paylink-mode-panel {
+    background: var(--pl-surface);
+    border: 1px solid var(--pl-border);
+    border-radius: var(--pl-radius-lg);
+    overflow: hidden;
+    box-shadow: var(--pl-shadow-sm);
+}
+
+/* --- Active toggle --- */
+.paylink-active-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--pl-space-5);
+    padding: var(--pl-space-5);
+    background: linear-gradient(180deg, var(--pl-surface-alt) 0%, var(--pl-surface) 100%);
+    border-bottom: 1px solid var(--pl-border-soft);
+    flex-wrap: wrap;
+}
+
+.paylink-active-toggle-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    flex: 1 1 240px;
+}
+
+.paylink-active-toggle-title {
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--pl-text);
+}
+
+.paylink-active-toggle-help {
+    font-size: 12px;
+    color: var(--pl-text-subtle);
+    line-height: 1.5;
+}
+
+.paylink-toggle {
+    display: inline-flex !important;
+    background: var(--pl-surface-mute) !important;
+    border: 1px solid var(--pl-border) !important;
+    border-radius: var(--pl-radius-pill) !important;
+    padding: 4px !important;
+    flex: 0 0 auto;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.paylink-toggle .paylink-toggle-option {
+    appearance: none !important;
+    background: transparent !important;
+    border: 0 !important;
+    padding: 9px 22px !important;
+    border-radius: var(--pl-radius-pill) !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    color: var(--pl-text-muted) !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: var(--pl-space-1) !important;
+    transition: background-color var(--pl-dur-2) var(--pl-ease),
+                color var(--pl-dur-2) var(--pl-ease),
+                box-shadow var(--pl-dur-2) var(--pl-ease) !important;
+    text-shadow: none !important;
+    letter-spacing: 0.2px;
+}
+
+.paylink-toggle .paylink-toggle-option .dashicons {
+    color: inherit !important;
+    width: 16px !important;
+    height: 16px !important;
+    font-size: 16px !important;
+    line-height: 16px !important;
+}
+
+.paylink-toggle .paylink-toggle-option:hover {
+    color: var(--pl-text) !important;
+}
+
+.paylink-toggle .paylink-toggle-option.is-active {
+    background: var(--pl-primary) !important;
+    color: #fff !important;
+    box-shadow: 0 2px 6px rgba(var(--pl-primary-rgb), 0.35) !important;
+}
+
+.paylink-toggle .paylink-toggle-option[data-mode="live"].is-active {
+    background: var(--pl-warning) !important;
+    box-shadow: 0 2px 6px rgba(217, 119, 6, 0.35) !important;
+}
+
+.paylink-toggle-hint {
+    flex: 1 1 100%;
+    margin: 0;
+    padding: 10px 14px;
+    background: var(--pl-primary-soft);
+    border-left: 3px solid var(--pl-primary);
+    border-radius: var(--pl-radius-sm);
+    color: var(--pl-text);
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: var(--pl-space-2);
+    line-height: 1.5;
+}
+
+.paylink-toggle-hint .dashicons {
+    color: var(--pl-primary);
+    flex: 0 0 auto;
+}
+
+.paylink-toggle-hint strong {
+    font-weight: 700;
+}
+
+/* --- Credentials cards --- */
+.paylink-creds-stack {
+    display: flex;
+    flex-direction: column;
+    gap: var(--pl-space-3);
+    padding: var(--pl-space-5);
+    background: var(--pl-surface);
+}
+
+.paylink-creds-card {
+    border: 1px solid var(--pl-border);
+    border-radius: var(--pl-radius-md);
+    padding: var(--pl-space-4) var(--pl-space-5);
+    background: var(--pl-surface);
+    transition: border-color var(--pl-dur-2) var(--pl-ease),
+                box-shadow var(--pl-dur-2) var(--pl-ease);
+}
+
+.paylink-creds-card.is-active {
+    border-color: var(--pl-primary);
+    box-shadow: 0 0 0 1px var(--pl-primary) inset, var(--pl-shadow-md);
+}
+
+.paylink-creds-card--live.is-active {
+    border-color: var(--pl-warning);
+    box-shadow: 0 0 0 1px var(--pl-warning) inset, 0 2px 6px rgba(217, 119, 6, 0.10);
+}
+
+.paylink-creds-head {
+    display: flex;
+    align-items: center;
+    gap: var(--pl-space-2);
+    margin: 0 0 var(--pl-space-3);
+    flex-wrap: wrap;
+}
+
+.paylink-creds-head > .dashicons {
+    color: var(--pl-text-muted);
+    width: 20px;
+    height: 20px;
+    font-size: 20px;
+    line-height: 20px;
+    flex: 0 0 auto;
+}
+
+.paylink-creds-card.is-active .paylink-creds-head > .dashicons {
+    color: var(--pl-primary);
+}
+
+.paylink-creds-card--live.is-active .paylink-creds-head > .dashicons {
+    color: var(--pl-warning);
+}
+
+.paylink-creds-head h4 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--pl-text);
+    flex: 1 1 auto;
+    line-height: 1.3;
+}
+
+.paylink-creds-active-pill {
+    display: none;
+    padding: 2px 10px;
+    border-radius: var(--pl-radius-pill);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    background: var(--pl-success);
+    color: #fff;
+}
+
+.paylink-creds-card.is-active .paylink-creds-active-pill {
+    display: inline-block;
+}
+
+.paylink-creds-summary {
+    margin: 0 0 var(--pl-space-3);
+    color: var(--pl-text-muted);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.paylink-creds-summary--live {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--pl-space-2);
+    padding: 10px 12px;
+    background: var(--pl-warning-soft);
+    border-left: 3px solid var(--pl-warning);
+    border-radius: var(--pl-radius-sm);
+    color: var(--pl-text);
+}
+
+.paylink-creds-summary--live .dashicons {
+    color: var(--pl-warning);
+    flex: 0 0 auto;
+    margin-top: 2px;
+}
+
+.paylink-creds-summary a {
+    text-decoration: underline;
+}
+
+/* Credentials state pill (Configured / Incomplete). */
+.paylink-mode-creds-state {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--pl-space-1);
+    padding: 3px 10px;
+    border-radius: var(--pl-radius-pill);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+}
+
+.paylink-mode-creds-state .dashicons {
+    width: 14px;
+    height: 14px;
+    font-size: 14px;
+    line-height: 14px;
+    color: inherit;
+}
+
+.paylink-mode-creds-state.is-ready {
+    background: var(--pl-success-soft);
+    color: #00731f;
+}
+
+.paylink-mode-creds-state.is-pending {
+    background: var(--pl-danger-soft);
+    color: #b32d2e;
+}
+
+/* Token field. */
+.paylink-mode-field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--pl-space-1);
+    margin: var(--pl-space-3) 0;
+    max-width: 560px;
+}
+
+.paylink-mode-field label {
+    font-weight: 600;
+    color: var(--pl-text);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--pl-space-2);
+}
+
+.paylink-status-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--pl-border);
+    transition: background-color var(--pl-dur-2) var(--pl-ease),
+                box-shadow var(--pl-dur-2) var(--pl-ease);
+}
+
+.paylink-status-dot.is-filled {
+    background: var(--pl-success);
+    box-shadow: 0 0 0 3px rgba(0, 163, 42, 0.18);
+}
+
+.paylink-mode-panel .paylink-mode-field input[type="text"],
+.paylink-mode-panel .paylink-mode-field input[type="password"] {
+    width: 100%;
+    box-sizing: border-box;
+    font-family: var(--pl-font-mono);
+    padding: 8px 12px;
+    border: 1px solid var(--pl-border);
+    border-radius: var(--pl-radius-sm);
+    transition: border-color var(--pl-dur-2) var(--pl-ease),
+                box-shadow var(--pl-dur-2) var(--pl-ease);
+}
+
+.paylink-mode-panel .paylink-mode-field input[type="text"]:hover,
+.paylink-mode-panel .paylink-mode-field input[type="password"]:hover {
+    border-color: var(--pl-text-faint);
+}
+
+.paylink-mode-panel .paylink-mode-field input[type="text"]:focus,
+.paylink-mode-panel .paylink-mode-field input[type="password"]:focus {
+    border-color: var(--pl-primary);
+    box-shadow: var(--pl-ring);
+    outline: none;
+}
+
+.paylink-mode-empty {
+    margin: var(--pl-space-1) 0 0;
+    padding: 8px 12px;
+    background: var(--pl-danger-soft);
+    border-left: 3px solid var(--pl-danger);
+    border-radius: var(--pl-radius-sm);
+    color: var(--pl-text);
+    font-size: 13px;
+}
+
+/* =============================================================
+   8. Test cards table
+   ============================================================= */
+.paylink-test-cards-box {
+    background: var(--pl-surface);
+    border: 1px solid var(--pl-border);
+    border-left: 4px solid var(--pl-warning);
+    border-radius: var(--pl-radius-lg);
+    padding: var(--pl-space-5);
+    box-shadow: var(--pl-shadow-sm);
+}
+
+.paylink-test-cards-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.paylink-test-cards-table th {
+    text-align: left;
+    color: var(--pl-text-muted);
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+}
+
+.paylink-test-cards-table td {
+    vertical-align: middle;
+}
+
+.paylink-test-cards-table button.paylink-test-card-number {
+    appearance: none;
+    border: 1px solid transparent;
+    cursor: pointer;
+    font-family: var(--pl-font-mono);
+    background: var(--pl-surface-mute);
+    padding: 4px 10px;
+    border-radius: var(--pl-radius-sm);
+    color: var(--pl-text);
+    font-weight: 500;
+    transition: background-color var(--pl-dur-2) var(--pl-ease),
+                color var(--pl-dur-2) var(--pl-ease),
+                border-color var(--pl-dur-2) var(--pl-ease),
+                transform var(--pl-dur-1) var(--pl-ease);
+}
+
+.paylink-test-cards-table button.paylink-test-card-number:hover {
+    background: var(--pl-primary);
+    color: #fff;
+}
+
+.paylink-test-cards-table button.paylink-test-card-number:active {
+    transform: translateY(1px);
+}
+
+.paylink-test-cards-table button.paylink-test-card-number.is-copied {
+    background: var(--pl-success);
+    color: #fff;
+    border-color: #008a20;
+}
+
+.paylink-test-cards-table button.paylink-test-card-number.is-copied::after {
+    content: " ✓";
+    margin-left: var(--pl-space-1);
+}
+
+.paylink-outcome {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--pl-space-1);
+    padding: 2px 10px;
+    border-radius: var(--pl-radius-pill);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.paylink-outcome--approved {
+    background: var(--pl-success-soft);
+    color: #00731f;
+}
+
+.paylink-outcome--approved .dashicons {
+    color: #00731f;
+}
+
+.paylink-outcome--declined {
+    background: var(--pl-danger-soft);
+    color: #b32d2e;
+}
+
+.paylink-outcome--declined .dashicons {
+    color: #b32d2e;
+}
+
+/* =============================================================
+   9. Support panel
+   ============================================================= */
+.paylink-support-box {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--pl-space-4);
+    background: var(--pl-surface);
+    border: 1px solid var(--pl-border);
+    border-left: 4px solid var(--pl-success);
+    border-radius: var(--pl-radius-lg);
+    padding: var(--pl-space-4) var(--pl-space-5);
+    box-shadow: var(--pl-shadow-sm);
+}
+
+.paylink-support-icon {
+    flex: 0 0 48px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--pl-success-soft);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.paylink-support-icon .dashicons {
+    color: #00731f;
+    width: 24px;
+    height: 24px;
+    font-size: 24px;
+}
+
+.paylink-support-body {
+    flex: 1;
+}
+
+.paylink-support-title {
+    margin: 0 0 var(--pl-space-1);
+    font-size: 16px;
+    line-height: 1.3;
+}
+
+.paylink-support-text {
+    margin: 0 0 var(--pl-space-3);
+    color: var(--pl-text-muted);
+    line-height: 1.5;
+}
+
+.paylink-support-actions {
+    display: flex;
+    gap: var(--pl-space-2);
+    flex-wrap: wrap;
+}
+
+.paylink-support-actions .button .dashicons {
+    margin-right: var(--pl-space-1);
+    margin-top: 3px;
+    color: inherit;
+}
+
+/* =============================================================
+   9b. Refunds panel
+   ============================================================= */
+.paylink-refund-box {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--pl-space-4);
+    background: var(--pl-surface);
+    border: 1px solid var(--pl-border);
+    border-left: 4px solid var(--pl-warning);
+    border-radius: var(--pl-radius-lg);
+    padding: var(--pl-space-4) var(--pl-space-5);
+    box-shadow: var(--pl-shadow-sm);
+}
+
+.paylink-refund-icon {
+    flex: 0 0 48px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--pl-warning-soft);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.paylink-refund-icon .dashicons {
+    color: #b45309;
+    width: 24px;
+    height: 24px;
+    font-size: 24px;
+}
+
+.paylink-refund-body { flex: 1; }
+
+.paylink-refund-title {
+    margin: 0 0 var(--pl-space-1);
+    font-size: 16px;
+    line-height: 1.3;
+}
+
+.paylink-refund-text {
+    margin: 0 0 var(--pl-space-3);
+    color: var(--pl-text-muted);
+    line-height: 1.5;
+}
+
+.paylink-refund-text a {
+    color: var(--pl-primary);
+    text-decoration: underline;
+}
+
+.paylink-refund-actions {
+    display: flex;
+    gap: var(--pl-space-2);
+    flex-wrap: wrap;
+}
+
+.paylink-refund-actions .button .dashicons {
+    margin-right: var(--pl-space-1);
+    margin-top: 3px;
+    color: inherit;
+}
+
+/* =============================================================
+   10. Order admin meta-box
+   ============================================================= */
+.paylink-order-meta {
+    margin-top: var(--pl-space-3);
+    padding: var(--pl-space-3) var(--pl-space-4);
+    background: var(--pl-surface-alt);
+    border-left: 3px solid var(--pl-primary);
+    border-radius: var(--pl-radius-sm);
+}
+
+.paylink-order-meta h4 {
+    margin: 0 0 var(--pl-space-2);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--pl-text-muted);
+}
+
+.paylink-order-meta p {
+    margin: var(--pl-space-1) 0;
+}
+
+.paylink-order-meta .paylink-expired {
+    color: var(--pl-danger);
+    font-style: italic;
+}
+
+/* =============================================================
+   11. Footer quick links
+   ============================================================= */
+.paylink-footer-cell {
+    padding: 0 !important;
+}
+
+.paylink-footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--pl-space-2) var(--pl-space-6);
+    padding: var(--pl-space-4) var(--pl-space-5);
+    background: var(--pl-surface);
+    border: 1px solid var(--pl-border);
+    border-radius: var(--pl-radius-md);
+    margin-top: var(--pl-space-4);
+    box-shadow: var(--pl-shadow-sm);
+}
+
+.paylink-footer-item {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--pl-space-1);
+    color: var(--pl-text-muted);
+    font-size: 13px;
+}
+
+.paylink-footer-item .dashicons {
+    color: var(--pl-primary);
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    line-height: 16px;
+}
+
+.paylink-footer-item a {
+    color: var(--pl-primary);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color var(--pl-dur-2) var(--pl-ease);
+}
+
+.paylink-footer-item a:hover,
+.paylink-footer-item a:focus-visible {
+    text-decoration: underline;
+}
+
+.paylink-footer-item--brand {
+    margin-left: auto;
+    color: var(--pl-text-faint);
+    font-size: 12px;
+}
+
+/* =============================================================
+   12. Universal focus ring
+   ============================================================= */
+.paylink-mode-row :focus-visible,
+.paylink-tutorial-row :focus-visible,
+.paylink-urls-row :focus-visible,
+.paylink-test-cards-row :focus-visible,
+.paylink-support-row :focus-visible,
+.paylink-hero-row :focus-visible,
+.paylink-footer-row :focus-visible {
+    outline: 2px solid var(--pl-primary);
+    outline-offset: 2px;
+    border-radius: var(--pl-radius-sm);
+}
+
+/* =============================================================
+   13. Print
+   ============================================================= */
+@media print {
+    .paylink-tutorial-row,
+    .paylink-test-cards-row,
+    .paylink-footer-row,
+    .paylink-copy-btn,
+    .paylink-toggle,
+    .paylink-toggle-hint {
+        display: none !important;
+    }
+}

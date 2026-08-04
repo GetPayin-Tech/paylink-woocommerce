@@ -1,0 +1,100 @@
+/**
+ * GetPayIn for WooCommerce — checkout styles
+ */
+
+.getpayin-payment-info {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    padding: 15px;
+    margin: 10px 0;
+}
+
+.getpayin-payment-info p {
+    margin: 0;
+    color: #6c757d;
+    font-size: 14px;
+}
+
+.getpayin-logo {
+    max-height: 40px;
+    width: auto;
+}
+
+#getpayin-payment-form {
+    margin: 15px 0;
+}
+
+#getpayin-payment-form p {
+    color: #495057;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* Loading state */
+.woocommerce-checkout-payment.blocked {
+    position: relative;
+}
+
+.woocommerce-checkout-payment.blocked::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    z-index: 999;
+}
+
+/* Error messages */
+.getpayin-error {
+    color: #dc3545;
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 4px;
+    padding: 10px;
+    margin: 10px 0;
+}
+
+/* Success messages */
+.getpayin-success {
+    color: #155724;
+    background: #d4edda;
+    border: 1px solid #c3e6cb;
+    border-radius: 4px;
+    padding: 10px;
+    margin: 10px 0;
+}
+
+.getpayin-payment-logos {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    margin: 10px 0 0;
+}
+
+.getpayin-payment-logos img {
+    display: block;
+    height: 28px;
+    width: auto;
+}
+
+.getpayin-payment-logos img.getpayin-logo-mastercard {
+    height: 32px;
+}
+
+@media (max-width: 480px) {
+    .getpayin-payment-logos {
+        gap: 8px;
+    }
+
+    .getpayin-payment-logos img {
+        height: 24px;
+    }
+
+    .getpayin-payment-logos img.getpayin-logo-mastercard {
+        height: 28px;
+    }
+}
