@@ -3,7 +3,7 @@
  * Plugin Name: GetPayIn for WooCommerce
  * Plugin URI: https://paylink.sa
  * Description: Accept payments via GetPayIn in your WooCommerce store.
- * Version: 1.1.0
+ * Version: 1.2.0
  * Author: GetPayIn
  * Author URI: https://paylink.sa
  * Text Domain: paylink-woocommerce
@@ -27,7 +27,7 @@ if (!defined('ABSPATH')) {
 define('PAYLINK_PLUGIN_FILE', __FILE__);
 define('PAYLINK_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('PAYLINK_PLUGIN_PATH', plugin_dir_path(__FILE__));
-define('PAYLINK_VERSION', '1.1.0');
+define('PAYLINK_VERSION', '1.2.0');
 define('PAYLINK_MIN_WC_VERSION', '5.0');
 define('PAYLINK_MIN_PHP_VERSION', '7.2');
 

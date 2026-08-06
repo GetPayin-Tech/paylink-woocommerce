@@ -5,6 +5,12 @@ All notable changes to this project are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0]
+
+### Added
+
+- **Embedded checkout (iframe)** — a new setting loads the hosted GetPayIn checkout inside an iframe on the order-pay page instead of redirecting away from the store. One-off payments only; the flag (`iframe=1`) is sent in the init request body so the server bakes it into the signed checkout URL. On completion the checkout posts a signed `paylink_payment` message that moves the shopper to the order-received (success) or pay (retry) page. Subscriptions always redirect, and the integration Origin must exactly match the store URL.
+
 ## [1.1.0]
 
 ### Added

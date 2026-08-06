@@ -13,6 +13,7 @@ order-sensitive HMAC-SHA256 signatures for you and keeps them in lockstep with
 the server.
 
 - Hosted checkout redirect (`process_payment` → GetPayIn) with idempotent invoice creation
+- **Embedded checkout (iframe)** — optionally keep shoppers on your store, with the hosted checkout embedded on the order-pay page (one-off payments only)
 - Capture now, or **authorize** and capture later from the dashboard
 - Fixed **installments** (2–24) on the hosted checkout
 - **Subscriptions** via WooCommerce Subscriptions — GetPayIn owns the schedule and dunning; renewals are recorded from webhooks
@@ -62,6 +63,7 @@ All options live on the gateway settings screen.
 | --- | --- |
 | **Payment action** | `Capture` charges immediately; `Authorize` places a hold and marks the order **On hold** — capture later from the GetPayIn dashboard. Authorize requires authorize mode enabled on your account. |
 | **Installments** | Offer a fixed number of installments (2–24) on the hosted checkout. Requires installments enabled on your account. |
+| **Embedded checkout** | Off by default. When on, the hosted checkout is embedded in an iframe on the order-pay page instead of redirecting, so shoppers stay on your store. One-off payments only — subscriptions always redirect. Requires the integration **Origin** to exactly match your store URL. |
 | **Callback URLs** | On by default. Over HTTPS, the plugin sends its own return and webhook URLs with every request, so you don't register them in the dashboard. They must resolve to your integration's registered domain. Turn off to use dashboard-configured URLs instead. |
 | **Test Mode** | Route to test credentials and surface the sandbox card reference. |
 | **Debug Log** | Log requests/responses to **WooCommerce → Status → Logs** (source `paylink`), with tokens and signatures redacted. |
@@ -82,6 +84,25 @@ The server accepts callback URLs only over **HTTPS** and on the integration's
 registered domain, so make sure the integration's **Origin** matches your store.
 Prefer to manage them yourself? Turn the option off and register both URLs in the
 dashboard.
+
+## Embedded checkout (iframe)
+
+With **Embedded checkout** enabled, one-off payments no longer redirect away from
+your store: after the order is placed the shopper lands on the WooCommerce
+order-pay page, which loads the hosted GetPayIn checkout inside an iframe.
+
+1. `process_payment` sends `iframe=1` in the init request body, so the server bakes
+   iframe mode into the (signed) checkout URL. The flag is never appended to the
+   returned URL — that would break the signature.
+2. The customer is redirected to the order-pay page, which embeds the checkout.
+3. On completion the hosted checkout posts a signed `paylink_payment` message; a
+   small listener moves the top window to the order-received (success) or pay
+   (retry) page. The message is accepted only from the GetPayIn checkout origin.
+
+Because the checkout posts its completion message only to a parent on the
+integration's registered Origin, the integration **Origin must exactly match your
+store URL** for the embedded flow to work. Subscriptions always redirect (the
+recurring init path does not sign the iframe flag).
 
 ## Subscriptions
 
