@@ -87,6 +87,13 @@ class WC_Gateway_Paylink extends WC_Payment_Gateway {
     public $installments;
 
     /**
+     * Whether one-off checkouts are embedded in an iframe rather than redirected to.
+     *
+     * @var bool
+     */
+    public $iframe_enabled;
+
+    /**
      * Whether to send this site's return/webhook URLs with each request (V2),
      * removing the need to configure them in the GetPayIn dashboard.
      *
@@ -140,6 +147,7 @@ class WC_Gateway_Paylink extends WC_Payment_Gateway {
         $this->payment_mode         = $this->get_option('payment_mode') === 'authorize' ? 'authorize' : 'capture';
         $this->installments_enabled = $this->get_option('installments_enabled') === 'yes';
         $this->installments         = max(2, min(24, (int) $this->get_option('installments', 3)));
+        $this->iframe_enabled       = $this->get_option('iframe_enabled') === 'yes';
         $this->send_own_urls        = $this->get_option('send_own_urls', 'yes') === 'yes';
 
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
@@ -148,6 +156,7 @@ class WC_Gateway_Paylink extends WC_Payment_Gateway {
         add_action('woocommerce_api_paylink_health', array($this, 'handle_health_check'));
         add_action('wp_enqueue_scripts', array($this, 'payment_scripts'));
         add_action('woocommerce_admin_order_data_after_billing_address', array($this, 'render_admin_order_meta'));
+        add_action('woocommerce_receipt_' . $this->id, array($this, 'render_iframe_receipt'));
     }
 
     /**
@@ -253,6 +262,14 @@ class WC_Gateway_Paylink extends WC_Payment_Gateway {
                 'custom_attributes' => array('min' => '2', 'max' => '24', 'step' => '1'),
                 'description'       => __('Between 2 and 24. Used only when installments are enabled.', 'paylink-woocommerce'),
                 'desc_tip'          => true,
+            ),
+            'iframe_enabled' => array(
+                'title'       => __('Embedded checkout', 'paylink-woocommerce'),
+                'type'        => 'checkbox',
+                'label'       => __('Load the GetPayIn checkout in an iframe instead of redirecting', 'paylink-woocommerce'),
+                'default'     => 'no',
+                'description' => __('Keeps customers on your store by embedding the hosted checkout. One-off payments only — subscriptions always redirect. Your integration Origin must exactly match your store URL.', 'paylink-woocommerce'),
+                'desc_tip'    => true,
             ),
             'send_own_urls' => array(
                 'title'       => __('Callback URLs', 'paylink-woocommerce'),
@@ -1234,10 +1251,7 @@ class WC_Gateway_Paylink extends WC_Payment_Gateway {
         $existing_checkout_url = $this->get_reusable_checkout_url($order);
         if ($existing_checkout_url) {
             $this->log(sprintf('Reusing existing GetPayIn checkout for order #%d', $order->get_id()));
-            return array(
-                'result'   => 'success',
-                'redirect' => $existing_checkout_url,
-            );
+            return $this->checkout_success_response($order, $existing_checkout_url);
         }
 
         // Short-lived lock prevents a fast double-click from creating two GetPayIn invoices.
@@ -1297,10 +1311,7 @@ class WC_Gateway_Paylink extends WC_Payment_Gateway {
              */
             do_action('paylink_checkout_initiated', $order, $invoice_id, $checkout_url);
 
-            return array(
-                'result'   => 'success',
-                'redirect' => $checkout_url,
-            );
+            return $this->checkout_success_response($order, $checkout_url);
 
         } catch (Exception $e) {
             $message = $e->getMessage();
@@ -1331,6 +1342,111 @@ class WC_Gateway_Paylink extends WC_Payment_Gateway {
             'result'   => 'failure',
             'messages' => $message,
         );
+    }
+
+    /**
+     * Build the process_payment success response for a one-off checkout.
+     *
+     * When Embedded checkout is enabled (one-off orders only), the customer is sent
+     * to the order-pay (receipt) page, which renders the hosted checkout inside an
+     * iframe rather than navigating away from the store. Otherwise the customer is
+     * redirected straight to the hosted checkout as before.
+     *
+     * @param WC_Order $order        Order instance.
+     * @param string   $checkout_url Hosted GetPayIn checkout URL (carries iframe=1 when embedded).
+     * @return array
+     */
+    private function checkout_success_response($order, $checkout_url) {
+        if ($this->iframe_enabled && !$this->order_is_subscription($order)) {
+            $order->update_meta_data(self::META_CHECKOUT_URL, $checkout_url);
+            $order->save();
+
+            return array(
+                'result'   => 'success',
+                'redirect' => $order->get_checkout_payment_url(true),
+            );
+        }
+
+        return array(
+            'result'   => 'success',
+            'redirect' => $checkout_url,
+        );
+    }
+
+    /**
+     * Render the embedded (iframe) checkout on the order-pay (receipt) page.
+     *
+     * Hooked on `woocommerce_receipt_{$id}`. Reached only when Embedded checkout is
+     * enabled and `process_payment()` redirected the customer here instead of to the
+     * hosted checkout. The hosted checkout, loaded in iframe mode, posts a signed
+     * `paylink_payment` message on completion; a small static listener
+     * (assets/js/iframe-checkout.js) moves the top window to the order-received or
+     * pay page accordingly. No inline JS is emitted, so the output is CSP-safe.
+     *
+     * @param int $order_id Order ID.
+     */
+    public function render_iframe_receipt($order_id) {
+        $order = wc_get_order($order_id);
+
+        $checkout_url = $order ? (string) $order->get_meta(self::META_CHECKOUT_URL) : '';
+
+        if (!$order || $checkout_url === '') {
+            echo '<p class="getpayin-embedded-error">'
+                . esc_html__('The checkout could not be loaded. Please try placing your order again.', 'paylink-woocommerce')
+                . ' <a href="' . esc_url(wc_get_cart_url()) . '">'
+                . esc_html__('Return to cart', 'paylink-woocommerce')
+                . '</a></p>';
+            return;
+        }
+
+        // Origin the checkout posts its completion message from — the scheme://host of
+        // the configured GetPayIn API base URL the API client talks to.
+        $origin = $this->checkout_origin();
+
+        $success_url = $order->get_checkout_order_received_url();
+        $fail_url    = $order->get_checkout_payment_url(false);
+
+        wp_enqueue_script(
+            'getpayin-iframe-checkout',
+            PAYLINK_PLUGIN_URL . 'assets/js/iframe-checkout.js',
+            array(),
+            PAYLINK_VERSION,
+            true
+        );
+
+        printf(
+            '<div id="getpayin-embedded-checkout" data-checkout-url="%s" data-origin="%s" data-success-url="%s" data-fail-url="%s">'
+                . '<iframe class="getpayin-embedded-frame" src="%1$s" allow="payment *" allowpaymentrequest="true" style="width:100%%;min-height:640px;height:82vh;border:0;"></iframe>'
+                . '<p class="getpayin-embedded-fallback"><a href="%1$s" target="_top">%5$s</a></p>'
+            . '</div>',
+            esc_url($checkout_url),
+            esc_url($origin),
+            esc_url($success_url),
+            esc_url($fail_url),
+            esc_html__('Trouble viewing the checkout? Open it in this window', 'paylink-woocommerce')
+        );
+    }
+
+    /**
+     * Scheme://host of the active GetPayIn checkout endpoint — the exact origin the
+     * hosted checkout stamps on its `paylink_payment` postMessage. Derived from the
+     * same base URL the API client uses so the two never drift.
+     *
+     * @return string
+     */
+    private function checkout_origin() {
+        $parts = wp_parse_url($this->api_endpoint);
+
+        if (empty($parts['scheme']) || empty($parts['host'])) {
+            return '';
+        }
+
+        $origin = $parts['scheme'] . '://' . $parts['host'];
+        if (!empty($parts['port'])) {
+            $origin .= ':' . $parts['port'];
+        }
+
+        return $origin;
     }
 
     /**
@@ -1379,7 +1495,29 @@ class WC_Gateway_Paylink extends WC_Payment_Gateway {
             $unsigned['installments']         = (string) $this->installments;
         }
 
+        // Embedded (iframe) checkout is one-off only: the server signs the flag on the
+        // one-off /init path but not on the recurring path, so subscriptions always
+        // redirect. Guard defensively even though subscriptions early-return before we
+        // ever reach checkout creation, so a mixed cart can never be baked as iframe.
+        if ($this->iframe_enabled && !$this->order_is_subscription($order)) {
+            $unsigned['iframe'] = '1';
+        }
+
         return array('signed' => $signed, 'unsigned' => $unsigned);
+    }
+
+    /**
+     * Whether the order sets up a WooCommerce subscription (parent / resubscribe /
+     * switch). Mirrors the detection used by the subscriptions bridge; when
+     * WooCommerce Subscriptions is not active there are no subscription orders, so
+     * this is always false.
+     *
+     * @param WC_Order $order Order instance.
+     * @return bool
+     */
+    private function order_is_subscription($order) {
+        return function_exists('wcs_order_contains_subscription')
+            && wcs_order_contains_subscription($order, array('parent', 'resubscribe', 'switch'));
     }
 
     /**
