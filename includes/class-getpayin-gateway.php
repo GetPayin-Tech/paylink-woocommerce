@@ -1199,25 +1199,25 @@ class WC_Gateway_Paylink extends WC_Payment_Gateway {
         return array(
             array(
                 'id'    => 'apple-pay',
-                'src'   => PAYLINK_PLUGIN_URL . 'assets/images/apple-pay.svg',
+                'src'   => PAYLINK_PLUGIN_URL . 'assets/images/apple-pay.png',
                 'alt'   => __('Apple Pay', 'paylink-woocommerce'),
                 'class' => '',
             ),
             array(
                 'id'    => 'google-pay',
-                'src'   => PAYLINK_PLUGIN_URL . 'assets/images/google-pay.svg',
+                'src'   => PAYLINK_PLUGIN_URL . 'assets/images/google-pay.png',
                 'alt'   => __('Google Pay', 'paylink-woocommerce'),
                 'class' => '',
             ),
             array(
                 'id'    => 'visa',
-                'src'   => PAYLINK_PLUGIN_URL . 'assets/images/visa.svg',
+                'src'   => PAYLINK_PLUGIN_URL . 'assets/images/visa.png',
                 'alt'   => __('Visa', 'paylink-woocommerce'),
                 'class' => '',
             ),
             array(
                 'id'    => 'mastercard',
-                'src'   => PAYLINK_PLUGIN_URL . 'assets/images/mastercard.svg',
+                'src'   => PAYLINK_PLUGIN_URL . 'assets/images/mastercard.png',
                 'alt'   => __('Mastercard', 'paylink-woocommerce'),
                 'class' => '',
             ),
@@ -1294,10 +1294,11 @@ class WC_Gateway_Paylink extends WC_Payment_Gateway {
 
         $embedded = $this->iframe_enabled && !self::cart_has_subscription();
 
+        // No logo strip here: WooCommerce already prints get_icon() in the option's
+        // own label, and repeating it under the description showed it twice.
         printf(
-            '<div id="paylink-payment-form"><p>%s</p>%s</div>',
-            esc_html(self::checkout_notice($embedded)),
-            wp_kses_post(self::payment_logos_html())
+            '<div id="paylink-payment-form"><p>%s</p></div>',
+            esc_html(self::checkout_notice($embedded))
         );
     }
 

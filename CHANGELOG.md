@@ -18,11 +18,13 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   from one source shared by the classic gateway and the blocks integration, and the
   block script no longer logs to the browser console.
 
-- **Brand logos redrawn.** `apple-pay.svg`, `google-pay.svg`, `visa.svg` and
-  `mastercard.svg` were placeholders — the scheme name set in Arial inside an outlined
-  box. They are now the real acceptance marks (Mastercard's interlocking circles, the
-  italic Visa wordmark, the four-colour Google "G", the Apple mark) on a light rounded
-  chip, all four drawn to one 130×60 artboard so they line up without per-logo CSS.
+- **Brand logos replaced with the official acceptance marks.** The previous
+  `apple-pay.svg`, `google-pay.svg`, `visa.svg` and `mastercard.svg` were placeholders —
+  the scheme name set in Arial inside an outlined box. They are now the supplied Apple
+  Pay, Google Pay, Visa and MasterCard marks, each trimmed and centred on one shared
+  260×120 chip (a 130×60 artboard at 2×, covering 3.75× device pixel ratio at the
+  largest display size), so a single CSS height serves the whole strip and the per-logo
+  Mastercard exception is gone. Palette-encoded PNGs, roughly 3 KB each.
 
 ### Changed
 
