@@ -7,6 +7,29 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [1.2.0]
 
+### Fixed
+
+- **The payment option customers select at checkout** now looks the same in both
+  checkouts. The accepted wallet and card logos (Apple Pay, Google Pay, Visa,
+  Mastercard) are rendered beside the option label via the gateway icon, the block
+  checkout decodes HTML entities in the title and description instead of printing
+  them raw, and the "what happens next" line reflects the **Embedded checkout**
+  setting rather than always promising a redirect. Logos and notice text now come
+  from one source shared by the classic gateway and the blocks integration, and the
+  block script no longer logs to the browser console.
+
+- **Brand logos redrawn.** `apple-pay.svg`, `google-pay.svg`, `visa.svg` and
+  `mastercard.svg` were placeholders — the scheme name set in Arial inside an outlined
+  box. They are now the real acceptance marks (Mastercard's interlocking circles, the
+  italic Visa wordmark, the four-colour Google "G", the Apple mark) on a light rounded
+  chip, all four drawn to one 130×60 artboard so they line up without per-logo CSS.
+
+### Changed
+
+- The default **Title** is now the short "Credit card or wallet" — the brand logos
+  carry the scheme names. Stores that saved the old scheme-list title keep it; shorten
+  it in the gateway settings to avoid repeating what the logos already show.
+
 ### Added
 
 - **Embedded checkout (iframe)** — a new setting loads the hosted GetPayIn checkout inside an iframe on the order-pay page instead of redirecting away from the store. One-off payments only; the flag (`iframe=1`) is sent in the init request body so the server bakes it into the signed checkout URL. On completion the checkout posts a signed `paylink_payment` message that moves the shopper to the order-received (success) or pay (retry) page. Subscriptions always redirect, and the integration Origin must exactly match the store URL.
