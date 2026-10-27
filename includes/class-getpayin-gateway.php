@@ -113,6 +113,7 @@ class WC_Gateway_Paylink extends WC_Payment_Gateway {
      */
     public function __construct() {
         $this->id                 = self::GATEWAY_ID;
+        // No single icon image: get_icon() renders the wallet / card brand strip.
         $this->icon               = '';
         $this->has_fields         = true;
         $this->method_title       = __('GetPayIn', 'paylink-woocommerce');
@@ -198,8 +199,8 @@ class WC_Gateway_Paylink extends WC_Payment_Gateway {
             'title' => array(
                 'title'       => __('Title', 'paylink-woocommerce'),
                 'type'        => 'text',
-                'description' => __('This controls the title which the user sees during checkout.', 'paylink-woocommerce'),
-                'default'     => __('Apple Pay / Google Pay / Visa / Mastercard', 'paylink-woocommerce'),
+                'description' => __('This controls the title which the user sees during checkout. The accepted wallet and card logos are shown automatically beside it, so a short title reads best.', 'paylink-woocommerce'),
+                'default'     => __('Credit card or wallet', 'paylink-woocommerce'),
                 'desc_tip'    => true,
             ),
             'description' => array(
@@ -1186,6 +1187,104 @@ class WC_Gateway_Paylink extends WC_Payment_Gateway {
     }
 
     /**
+     * The wallets and card schemes the hosted checkout accepts.
+     *
+     * Single source of truth for both checkouts: the classic checkout renders these
+     * beside the option the customer selects (see get_icon()) and inside the expanded
+     * payment form, and the blocks integration hands the same list to the block.
+     *
+     * @return array[] Each entry: id, src, alt, class.
+     */
+    public static function payment_logos() {
+        return array(
+            array(
+                'id'    => 'apple-pay',
+                'src'   => PAYLINK_PLUGIN_URL . 'assets/images/apple-pay.svg',
+                'alt'   => __('Apple Pay', 'paylink-woocommerce'),
+                'class' => '',
+            ),
+            array(
+                'id'    => 'google-pay',
+                'src'   => PAYLINK_PLUGIN_URL . 'assets/images/google-pay.svg',
+                'alt'   => __('Google Pay', 'paylink-woocommerce'),
+                'class' => '',
+            ),
+            array(
+                'id'    => 'visa',
+                'src'   => PAYLINK_PLUGIN_URL . 'assets/images/visa.svg',
+                'alt'   => __('Visa', 'paylink-woocommerce'),
+                'class' => '',
+            ),
+            array(
+                'id'    => 'mastercard',
+                'src'   => PAYLINK_PLUGIN_URL . 'assets/images/mastercard.svg',
+                'alt'   => __('Mastercard', 'paylink-woocommerce'),
+                'class' => '',
+            ),
+        );
+    }
+
+    /**
+     * Markup for the brand logo strip.
+     *
+     * @param string $extra_class Additional class on the wrapper element.
+     * @return string
+     */
+    public static function payment_logos_html($extra_class = '') {
+        $html = '<span class="' . esc_attr(trim('getpayin-payment-logos ' . $extra_class)) . '"'
+            . ' role="list" aria-label="' . esc_attr__('Supported payment methods', 'paylink-woocommerce') . '">';
+
+        foreach (self::payment_logos() as $logo) {
+            $html .= '<img src="' . esc_url($logo['src']) . '" alt="' . esc_attr($logo['alt']) . '"'
+                . ($logo['class'] !== '' ? ' class="' . esc_attr($logo['class']) . '"' : '')
+                . ' role="listitem" />';
+        }
+
+        return $html . '</span>';
+    }
+
+    /**
+     * Icon shown beside the payment option the customer selects at checkout.
+     *
+     * WooCommerce prints this inside the option's label, so the shopper can see which
+     * wallets and cards GetPayIn accepts before expanding it. Overridden because the
+     * gateway shows a strip of brand logos rather than one icon image.
+     *
+     * @return string
+     */
+    public function get_icon() {
+        $icon = self::payment_logos_html('getpayin-payment-logos--inline');
+
+        return apply_filters('woocommerce_gateway_icon', $icon, $this->id);
+    }
+
+    /**
+     * Whether the cart sets up a subscription. Subscriptions always redirect to the
+     * hosted checkout, even when Embedded checkout is enabled.
+     *
+     * @return bool
+     */
+    public static function cart_has_subscription() {
+        return class_exists('WC_Subscriptions_Cart')
+            && method_exists('WC_Subscriptions_Cart', 'cart_contains_subscription')
+            && WC_Subscriptions_Cart::cart_contains_subscription();
+    }
+
+    /**
+     * What the customer is told will happen after they place the order.
+     *
+     * @param bool $embedded Whether the hosted checkout will be embedded on this store.
+     * @return string
+     */
+    public static function checkout_notice($embedded = false) {
+        if ($embedded) {
+            return __('The secure GetPayIn payment form opens on the next step, without leaving this store.', 'paylink-woocommerce');
+        }
+
+        return __('You will be redirected to GetPayIn to complete your payment.', 'paylink-woocommerce');
+    }
+
+    /**
      * Payment form on checkout page.
      */
     public function payment_fields() {
@@ -1193,17 +1292,13 @@ class WC_Gateway_Paylink extends WC_Payment_Gateway {
             echo wp_kses_post(wpautop(wptexturize($this->description)));
         }
 
-        ?>
-        <div id="paylink-payment-form">
-            <p><?php echo esc_html__('You will be redirected to GetPayIn to complete your payment.', 'paylink-woocommerce'); ?></p>
-            <div class="getpayin-payment-logos" role="list" aria-label="<?php echo esc_attr__('Supported payment methods', 'paylink-woocommerce'); ?>">
-                <img src="<?php echo esc_url(PAYLINK_PLUGIN_URL . 'assets/images/apple-pay.svg'); ?>" alt="<?php echo esc_attr__('Apple Pay', 'paylink-woocommerce'); ?>" role="listitem" />
-                <img src="<?php echo esc_url(PAYLINK_PLUGIN_URL . 'assets/images/google-pay.svg'); ?>" alt="<?php echo esc_attr__('Google Pay', 'paylink-woocommerce'); ?>" role="listitem" />
-                <img src="<?php echo esc_url(PAYLINK_PLUGIN_URL . 'assets/images/visa.svg'); ?>" alt="<?php echo esc_attr__('Visa', 'paylink-woocommerce'); ?>" role="listitem" />
-                <img src="<?php echo esc_url(PAYLINK_PLUGIN_URL . 'assets/images/mastercard.svg'); ?>" alt="<?php echo esc_attr__('Mastercard', 'paylink-woocommerce'); ?>" class="getpayin-logo-mastercard" role="listitem" />
-            </div>
-        </div>
-        <?php
+        $embedded = $this->iframe_enabled && !self::cart_has_subscription();
+
+        printf(
+            '<div id="paylink-payment-form"><p>%s</p>%s</div>',
+            esc_html(self::checkout_notice($embedded)),
+            wp_kses_post(self::payment_logos_html())
+        );
     }
 
     /**
@@ -2373,7 +2468,8 @@ class WC_Gateway_Paylink extends WC_Payment_Gateway {
             'id'          => $this->id,
             'title'       => $this->title,
             'description' => $this->description,
-            'icon'        => $this->icon,
+            'notice'      => self::checkout_notice($this->iframe_enabled && !self::cart_has_subscription()),
+            'icons'       => self::payment_logos(),
             'supports'    => $this->supports,
         );
     }

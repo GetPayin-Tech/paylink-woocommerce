@@ -77,12 +77,8 @@
 
 .getpayin-payment-logos img {
     display: block;
-    height: 28px;
-    width: auto;
-}
-
-.getpayin-payment-logos img.getpayin-logo-mastercard {
     height: 32px;
+    width: auto;
 }
 
 @media (max-width: 480px) {
@@ -91,10 +87,51 @@
     }
 
     .getpayin-payment-logos img {
-        height: 24px;
-    }
-
-    .getpayin-payment-logos img.getpayin-logo-mastercard {
         height: 28px;
+    }
+}
+
+/* Logo strip beside the payment option the customer selects (classic + blocks) */
+.getpayin-payment-logos--inline {
+    display: inline-flex;
+    margin: 0;
+    gap: 8px;
+    vertical-align: middle;
+}
+
+.getpayin-payment-logos--inline img {
+    height: 26px;
+    max-height: 26px;
+    box-shadow: none;
+}
+
+/* Block checkout: title and logos on one row inside the option label */
+.getpayin-blocks-label {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+}
+
+.getpayin-blocks-title {
+    flex: 1 1 auto;
+}
+
+.getpayin-payment-content p {
+    margin: 0 0 8px;
+    color: #495057;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.getpayin-payment-content p:last-child {
+    margin-bottom: 0;
+}
+
+@media (max-width: 480px) {
+    .getpayin-payment-logos--inline img {
+        height: 22px;
+        max-height: 22px;
     }
 }

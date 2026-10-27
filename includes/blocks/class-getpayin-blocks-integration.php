@@ -96,12 +96,20 @@ final class WC_Paylink_Blocks_Support extends AbstractPaymentMethodType {
     /**
      * Returns payment method data for the frontend.
      *
+     * Carries the brand logos and the post-order notice so the option the customer
+     * selects in the block checkout matches the classic one.
+     *
      * @return array
      */
     public function get_payment_method_data() {
+        $embedded = 'yes' === $this->get_setting('iframe_enabled')
+            && !WC_Gateway_Paylink::cart_has_subscription();
+
         return array(
-            'title'       => $this->get_setting('title', __('Apple Pay / Google Pay / Visa / Mastercard', 'paylink-woocommerce')),
+            'title'       => $this->get_setting('title', __('Credit card or wallet', 'paylink-woocommerce')),
             'description' => $this->get_setting('description', __('Pay securely using your card or wallet via GetPayIn.', 'paylink-woocommerce')),
+            'notice'      => WC_Gateway_Paylink::checkout_notice($embedded),
+            'icons'       => WC_Gateway_Paylink::payment_logos(),
             'testmode'    => $this->get_setting('testmode') === 'yes',
             'supports'    => $this->get_supported_features(),
         );
