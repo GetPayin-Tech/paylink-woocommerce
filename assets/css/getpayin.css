@@ -93,10 +93,14 @@
 
 /* Logo strip beside the payment option the customer selects (classic + blocks) */
 .getpayin-payment-logos--inline {
-    display: inline-flex;
-    margin: 0;
+    /* Block-level, so the strip takes a line of its own inside the option label
+       instead of sharing one with the title and folding into a 2x2 block when the
+       theme's payment column is narrow. */
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    margin: 6px 0 0;
     gap: 8px;
-    vertical-align: middle;
 }
 
 .getpayin-payment-logos--inline img {
