@@ -200,14 +200,14 @@ class WC_Gateway_Paylink extends WC_Payment_Gateway {
                 'title'       => __('Title', 'paylink-woocommerce'),
                 'type'        => 'text',
                 'description' => __('This controls the title which the user sees during checkout. The accepted wallet and card logos are shown automatically beside it, so a short title reads best.', 'paylink-woocommerce'),
-                'default'     => __('Credit card or wallet', 'paylink-woocommerce'),
+                'default'     => __('Online Payment', 'paylink-woocommerce'),
                 'desc_tip'    => true,
             ),
             'description' => array(
                 'title'       => __('Description', 'paylink-woocommerce'),
                 'type'        => 'textarea',
                 'description' => __('This controls the description which the user sees during checkout.', 'paylink-woocommerce'),
-                'default'     => __('Pay securely using your card or wallet via GetPayIn.', 'paylink-woocommerce'),
+                'default'     => __('Credit / Debit Card (GetPayIn)', 'paylink-woocommerce'),
             ),
             'mode_panel' => array(
                 'title' => __('Mode & credentials', 'paylink-woocommerce'),

@@ -106,8 +106,8 @@ final class WC_Paylink_Blocks_Support extends AbstractPaymentMethodType {
             && !WC_Gateway_Paylink::cart_has_subscription();
 
         return array(
-            'title'       => $this->get_setting('title', __('Credit card or wallet', 'paylink-woocommerce')),
-            'description' => $this->get_setting('description', __('Pay securely using your card or wallet via GetPayIn.', 'paylink-woocommerce')),
+            'title'       => $this->get_setting('title', __('Online Payment', 'paylink-woocommerce')),
+            'description' => $this->get_setting('description', __('Credit / Debit Card (GetPayIn)', 'paylink-woocommerce')),
             'notice'      => WC_Gateway_Paylink::checkout_notice($embedded),
             'icons'       => WC_Gateway_Paylink::payment_logos(),
             'testmode'    => $this->get_setting('testmode') === 'yes',

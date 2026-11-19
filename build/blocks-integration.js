@@ -25,7 +25,7 @@
     // Get payment method data
     var settings = wc.wcSettings.getSetting('paylink_data', {});
 
-    var title = decodeEntities(settings.title || translate('Credit card or wallet', 'paylink-woocommerce'));
+    var title = decodeEntities(settings.title || translate('Online Payment', 'paylink-woocommerce'));
     var description = decodeEntities(settings.description || '');
     var notice = decodeEntities(settings.notice || '');
     var icons = Array.isArray(settings.icons) ? settings.icons : [];
