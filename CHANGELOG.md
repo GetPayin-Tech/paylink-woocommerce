@@ -28,9 +28,10 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Changed
 
-- The default **Title** is now the short "Credit card or wallet" — the brand logos
-  carry the scheme names. Stores that saved the old scheme-list title keep it; shorten
-  it in the gateway settings to avoid repeating what the logos already show.
+- **Default checkout text** (PAYL-1995) is now **Title** "Online Payment" and
+  **Description** "Credit / Debit Card (GetPayIn)", replacing the scheme list that used
+  to stand in for the missing logos. Defaults apply to new installs only — a store that
+  has saved its own title and description keeps them.
 
 ### Added
 
